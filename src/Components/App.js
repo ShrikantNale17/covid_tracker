@@ -9,6 +9,7 @@ function App() {
   const [covidData, setCovidData] = useState([])
   const [index, setIndex] = useState(0)
   const [page, setPage] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
   const [chartData, setChartData] = useState({
     categories: [],
     TotalConfirmed: [],
@@ -16,6 +17,7 @@ function App() {
     TotalRecovered: []
   })
   const BarsOnPage = 5
+  // const LastPage = Math.ceil(covidData.length/BarsOnPage)
 
   useEffect(() => {
     axios("https://api.covid19api.com/summary")
@@ -27,17 +29,11 @@ function App() {
     setIndex(5 * page)
   }, [page])
 
-  console.log(covidData.length / 5 + 1)
-  console.log(page, page + 5 < covidData.length / 5)
-
   /* const dataElements = covidData.map(data => {
     return [data.Country, data.TotalConfirmed, data.TotalDeaths, data.TotalRecovered]
   }) */
 
   const dataElements = covidData.slice(index, index + BarsOnPage)
-
-  // console.log(dataElements)
-  console.log(chartData)
 
   useEffect(() => {
     setChartData({
@@ -50,60 +46,73 @@ function App() {
     )
   }, [index, covidData])
 
+  console.log(page, currentPage)
+
+  function previous() {
+    if (page >= 1 && page === currentPage) {
+      setPage(page - 1)
+      setCurrentPage(page - 1)
+    } else {
+      setPage(page - 1)
+    }
+  }
+
+  function next() {
+    if (page > 3) {
+      setPage(page + 1)
+      setCurrentPage(page - 3)
+    } else {
+      setPage(page + 1)
+    }
+
+  }
+
+  function setPageNo(pageNo) {
+    setPage(pageNo - 1)
+  }
+
   return (
-    <div className="App"/*  style={{border: "10px groove grey", margin: "20px 150px"}} */>
+    <div className="App">
 
       <Chart chartData={chartData} />
-      {/* {covidData && <Chart
-        width={'80%'}
-        height={'70vh'}
-        format={'decimal'}
-        chartType="Bar"
-        loader={<div>Loading Chart</div>}
-        data={[
-          ['Country', 'TotalConfirmed', 'TotalDeaths', 'TotalRecovered'],
-          dataElements[0],
-          dataElements[1],
-          dataElements[2],
-          dataElements[3],
-          dataElements[4]
-        ]}
-        options={{
-          // Material design options
-          chart: {
-            title: 'Covid Tracker',
-            subtitle: 'Sales, Expenses, and Profit: 2014-2017',
-          },
-        }}
-        // For tests
-        rootProps={{ 'data-testid': '2' }}
-      />} */}
 
-      {/* <nav aria-label="...">
-        <ul class="pagination">
-          <li class="page-item disabled">
-            <span class="page-link">Previous</span>
-          </li>
-          <li class="page-item"><a class="page-link" href="#">1</a></li>
-          <li class="page-item active" aria-current="page">
-            <span class="page-link">2</span>
-          </li>
-          <li class="page-item"><a class="page-link" href="#">3</a></li>
-          <li class="page-item">
-            <a class="page-link" href="#">Next</a>
-          </li>
-        </ul>
-      </nav> */}
-
-      <nav aria-label="..." style={{marginTop: "40px", marginLeft: "auto", marginRight: "20%"}}>
+      <nav aria-label="..." style={{marginTop: "5%"}}>
         <ul className="pagination">
-          <li><button className="page-item page-link" onClick={() => setPage(prevPage => prevPage > 5 && prevPage - 5)}>Previous</button></li>
-          {page < covidData.length/5 && <li><button className="page-item page-link active" id={page + 1} onClick={() => setIndex(5 * page)}>{page + 1}</button></li>}
-          {page+1 < covidData.length/5 && <li><button className="page-item page-link" id={page + 2} onClick={() => setIndex(5 * (page + 1))}>{page + 2}</button></li>}
-          {page+2 < covidData.length/5 && <li><button className="page-item page-link" id={page + 3} onClick={() => setIndex(5 * (page + 2))}>{page + 3}</button></li>}
-          {page+3 < covidData.length/5 && <li><button className="page-item page-link" id={page + 4} onClick={() => setIndex(5 * (page + 3))}>{page + 4}</button></li>}
-          {page+4 < covidData.length/5 && <li><button className="page-item page-link" id={page + 5} onClick={() => setIndex(5 * (page + 4))}>{page + 5}</button></li>}
-          <li><button className="page-item page-link" onClick={() => setPage(prevPage => prevPage + 5)} disabled={page+5 > covidData.length/5 && "disabled"}>Next</button></li>
+          <li className={`page-item ${page === 0 && "disabled"}`}>
+            <button className="page-link" onClick={previous}>
+              Previous
+            </button>
+          </li>
+          <li className={`page-item ${page === currentPage && "active"}`}>
+            <button className="page-link" onClick={() => setPageNo(currentPage + 1)}>
+              {currentPage + 1}
+            </button>
+          </li>
+          <li className={`page-item ${page === currentPage + 1 && "active"}`} aria-current="page">
+            <button className="page-link" onClick={() => setPageNo(currentPage + 2)}>
+              {currentPage + 2}
+            </button>
+          </li>
+          <li className={`page-item ${page === currentPage + 2 && "active"}`}>
+            <button className="page-link" onClick={() => setPageNo(currentPage + 3)}>
+              {currentPage + 3}
+            </button>
+          </li>
+          <li className={`page-item ${page === currentPage + 3 && "active"}`} aria-current="page">
+            <button className="page-link" onClick={() => setPageNo(currentPage + 4)}>
+              {currentPage + 4}
+            </button>
+          </li>
+          <li className={`page-item ${page === currentPage + 4 && "active"}`}>
+            <button className="page-link" onClick={() => setPageNo(currentPage + 5)}>
+              {currentPage + 5}
+            </button>
+          </li>
+          <li className={`page-item ${page + 1 === Math.ceil(covidData.length / 5) && "disabled"}`}>
+            <button className="page-link" onClick={next}>
+              Next
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
